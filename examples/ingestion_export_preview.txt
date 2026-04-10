@@ -1,0 +1,25 @@
+# Army Vantage — sample ingestion export (preview)
+
+Columns (CSV / JSONL / XLSX):
+  document_id, source_filename, original_file_type, chunk_id, page_start, page_end,
+  section_title, document_type, extraction_method, extraction_confidence,
+  chunk_text, processing_timestamp
+
+Example JSONL line (pretty-printed for readability; real JSONL is one line per record):
+{
+  "document_id": "a1b2c3d4e5f6…",
+  "source_filename": "spec_section_09_65_00.pdf",
+  "original_file_type": "pdf",
+  "chunk_id": "a1b2c3d4e5f6…-chunk-0001",
+  "page_start": 1,
+  "page_end": 3,
+  "section_title": "PART 2 - PRODUCTS",
+  "document_type": "specification_section",
+  "extraction_method": "parse",
+  "extraction_confidence": 0.98,
+  "chunk_text": "…",
+  "processing_timestamp": "2026-04-10T18:00:00+00:00"
+}
+
+CSV: UTF-8, RFC 4180-style quoting for fields containing quotes or newlines.
+XLSX: Strings stored as text; leading =/+/-/@ in chunk_text prefixed to avoid formula injection.

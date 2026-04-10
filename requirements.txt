@@ -1,0 +1,7 @@
+# This project is configured via pyproject.toml. Use an editable install:
+#
+#   pip install -e .
+#   pip install -e ".[dev]"
+#   pip install -e ".[dev,api]"
+#
+# Pinning production versions is optional; use pip-tools or uv lock when you need reproducible builds.

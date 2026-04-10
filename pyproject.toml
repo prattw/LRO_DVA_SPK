@@ -1,0 +1,78 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vantage-preprocess"
+version = "0.1.0"
+description = "Document preprocessing pipeline for Army Vantage ingestion (PDF, DOCX, TXT, scans)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+authors = [{ name = "Your Team" }]
+keywords = ["army-vantage", "documents", "pdf", "ocr", "ingestion"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "pydantic>=2.5",
+    "typer>=0.12",
+    "pymupdf>=1.24",
+    "python-docx>=1.1",
+    "Pillow>=10",
+    "pytesseract>=0.3.10",
+    "openpyxl>=3.1",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic-settings>=2.2",
+    "python-multipart>=0.0.9",
+]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.4",
+    "httpx>=0.27",
+]
+
+[project.scripts]
+vantage-preprocess = "vantage_preprocess.cli:app"
+vantage-api = "vantage_api.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+vantage_api = ["web/*.html", "web/*.css", "web/*.js"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+markers = [
+    "integration: uses TestClient, temp files, or multi-stage pipeline",
+    "api: requires FastAPI / multipart (importorskip in module if needed)",
+    "ocr: optional tests that need Tesseract or real scanned PDFs",
+    "slow: large inputs or many iterations",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["*/tests/*"]

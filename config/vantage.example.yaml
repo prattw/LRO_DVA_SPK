@@ -1,0 +1,31 @@
+# Example pipeline configuration (YAML).
+# Wire this to vantage_preprocess.config.PipelineConfig in a future CLI flag or API handler.
+#
+# Copy to vantage.yaml and adjust; do not commit secrets.
+
+pipeline:
+  intake:
+    # Maximum upload size in bytes (default 500 MiB). Set null for no limit.
+    max_bytes: 524288000
+    # Optional: allow only these suffixes (lowercase, include the dot), or null for any.
+    allowed_suffixes: null
+
+  chunk:
+    sizing:
+      min_words: 500
+      max_words: 2000
+      target_words_low: 1200
+      target_words_high: 1500
+      overlap_words_low: 100
+      overlap_words_high: 200
+      words_per_token: 0.75
+    combined_basename: vantage_chunks
+
+  export:
+    formats:
+      - jsonl
+      - csv
+      - xlsx
+
+logging:
+  level: INFO
