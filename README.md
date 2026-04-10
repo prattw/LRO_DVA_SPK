@@ -56,7 +56,20 @@ vantage-api
 # or: python -m vantage_api
 ```
 
-Open `http://127.0.0.1:8000/docs` for OpenAPI. `/health` is wired; upload/job routes come later.
+- **Swagger:** `http://127.0.0.1:8000/docs`
+- **Browser UI:** `http://127.0.0.1:8000/ui/`
+- **Health:** `GET /health`
+
+Upload → job status → ZIP download are on `POST /upload-and-process`, `GET /status/{job_id}`, `GET /download/{job_id}` (see `docs/API_ARMY_VANTAGE.md`).
+
+### Docker (local or cloud)
+
+```bash
+docker build -t vantage-api .
+docker run --rm -p 8000:8000 -v vantage-data:/data vantage-api
+```
+
+Deploy options: `docs/ONLINE.md` (Render blueprint `render.yaml`, tunnels, Fly).
 
 ## Configuration
 

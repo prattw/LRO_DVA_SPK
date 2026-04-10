@@ -1,0 +1,18 @@
+# Render Blueprint — connect repo at https://dashboard.render.com
+# New → Blueprint → paste this file or point at repo root.
+
+services:
+  - type: web
+    name: army-vantage-preprocess
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: VANTAGE_DATA_DIR
+        value: /data
+      - key: VANTAGE_API_HOST
+        value: 0.0.0.0
+      - key: VANTAGE_LOG_LEVEL
+        value: info
