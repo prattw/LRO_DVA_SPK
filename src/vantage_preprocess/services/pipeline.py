@@ -10,6 +10,7 @@ from vantage_preprocess.config import PipelineConfig
 from vantage_preprocess.export.csv_export import write_csv
 from vantage_preprocess.export.excel import write_excel
 from vantage_preprocess.export.jsonl import write_jsonl
+from vantage_preprocess.export.txt_portal import write_txt_portal_files
 from vantage_preprocess.models.document import ExportRow
 from vantage_preprocess.models.result import BatchResult, ErrorRecord, PerFileOutcome
 from vantage_preprocess.quality.scoring import summarize_job_quality
@@ -155,8 +156,10 @@ def write_batch_artifacts(
     *,
     combined_basename: str,
     input_display: str,
+    portal_txt_max_bytes: int = 9_437_184,
+    portal_txt_subdir: str = "vantage_portal_txt",
 ) -> Path:
-    """Write JSONL/CSV/XLSX and run_manifest.json; returns manifest path."""
+    """Write JSONL/CSV/XLSX, optional portal ``.txt`` bundle, and run_manifest.json."""
     out_dir.mkdir(parents=True, exist_ok=True)
     fmt_set = {f.strip().lower() for f in formats}
     if "jsonl" in fmt_set:
@@ -165,6 +168,17 @@ def write_batch_artifacts(
         write_csv(batch.rows, out_dir / f"{combined_basename}.csv")
     if "xlsx" in fmt_set or "excel" in fmt_set:
         write_excel(batch.rows, out_dir / f"{combined_basename}.xlsx")
+
+    portal_txt_files = 0
+    portal_txt_path: str | None = None
+    if "txt" in fmt_set:
+        portal_txt_files, pdir = write_txt_portal_files(
+            batch.rows,
+            out_dir,
+            max_bytes_per_file=portal_txt_max_bytes,
+            subdir_name=portal_txt_subdir,
+        )
+        portal_txt_path = str(pdir.resolve())
 
     manifest = {
         "run_id": batch.run_id,
@@ -178,6 +192,12 @@ def write_batch_artifacts(
         "quality_summary": summarize_job_quality(batch.rows),
         "errors": [e.model_dump(mode="json") for e in batch.errors],
     }
+    if "txt" in fmt_set:
+        manifest["portal_txt"] = {
+            "files_written": portal_txt_files,
+            "max_bytes_per_file": portal_txt_max_bytes,
+            "directory": portal_txt_path,
+        }
     manifest_path = out_dir / "run_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     return manifest_path

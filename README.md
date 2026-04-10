@@ -1,6 +1,6 @@
 # vantage-preprocess
 
-Document preprocessing pipeline for Army Vantage–style ingestion: **PDF, DOCX, TXT, CSV, Excel (xlsx),** and scanned images → structured **JSONL**, **CSV**, and **XLSX** exports.
+Document preprocessing pipeline for Army Vantage–style ingestion: **PDF, DOCX, TXT, CSV, Excel (xlsx),** and scanned images → structured **JSONL**, **CSV**, **XLSX**, and **plain `.txt` chunks** (for the Army Vantage web uploader) exports.
 
 ## Requirements
 

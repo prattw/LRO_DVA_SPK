@@ -74,6 +74,12 @@ class ApiSettings(BaseSettings):
         ge=0,
         validation_alias=AliasChoices("VANTAGE_CHUNK_OVERLAP_HIGH"),
     )
+    portal_txt_max_bytes: int = Field(
+        default=9_437_184,
+        ge=4096,
+        description="Max UTF-8 bytes per portal .txt file (Army Vantage web upload).",
+        validation_alias=AliasChoices("VANTAGE_PORTAL_TXT_MAX_BYTES"),
+    )
 
     def chunking_model(self) -> ChunkingConfig:
         """Build chunking config from environment-backed fields."""

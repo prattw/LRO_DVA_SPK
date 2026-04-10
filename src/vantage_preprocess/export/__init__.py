@@ -1,5 +1,5 @@
 """
-Army Vantage export: ingestion-shaped rows to CSV, JSONL, and XLSX.
+Army Vantage export: ingestion-shaped rows to CSV, JSONL, and XLSX, plus optional portal ``.txt`` files.
 
 Use :class:`~vantage_preprocess.export.csv_exporter.CsvVantageExporter` and siblings for
 class-based export; :func:`~vantage_preprocess.export.csv_export.write_csv` wraps them for
@@ -14,6 +14,7 @@ from vantage_preprocess.export.ingestion_record import (
 )
 from vantage_preprocess.export.jsonl_exporter import JsonlVantageExporter
 from vantage_preprocess.export.preview import SAMPLE_EXPORT_PREVIEW, format_ingestion_preview
+from vantage_preprocess.export.txt_portal import write_txt_portal_files
 from vantage_preprocess.export.xlsx_exporter import XlsxVantageExporter
 
 __all__ = [
@@ -25,4 +26,5 @@ __all__ = [
     "XlsxVantageExporter",
     "format_ingestion_preview",
     "ingestion_records_from_export_rows",
+    "write_txt_portal_files",
 ]

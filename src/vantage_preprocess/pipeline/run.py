@@ -50,7 +50,10 @@ def run_pipeline(
     """High-level entry: collect files → run sync pipeline → write exports + manifest."""
     sizing = chunking or ChunkingConfig()
     config = PipelineConfig(
-        chunk=ChunkPolicy(sizing=sizing, combined_basename=combined_basename),
+        chunk=ChunkPolicy(
+            sizing=sizing,
+            combined_basename=combined_basename,
+        ),
     )
     paths = collect_paths(input_path, recursive)
     run_id = run_manifest_id()
@@ -68,5 +71,7 @@ def run_pipeline(
         formats,
         combined_basename=combined_basename,
         input_display=str(input_path.resolve()),
+        portal_txt_max_bytes=config.chunk.portal_txt_max_bytes,
+        portal_txt_subdir=config.chunk.portal_txt_subdir,
     )
     return RunResult(manifest_path=manifest_path, batch=batch)

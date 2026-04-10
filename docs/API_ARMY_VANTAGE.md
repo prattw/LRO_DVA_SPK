@@ -7,7 +7,7 @@ Modular layout:
 | `vantage_api.routes.*` | HTTP validation, job registration, background enqueue |
 | `vantage_api.jobs.executor` | Blocking pipeline + job store updates (reusable from a future worker) |
 | `vantage_api.processing.runner` | ZIP packaging, `processing_report.json` |
-| `vantage_preprocess.services.pipeline` | Extraction → chunking → CSV/JSONL/XLSX |
+| `vantage_preprocess.services.pipeline` | Extraction → chunking → CSV/JSONL/XLSX + portal ``.txt`` |
 
 Processing is **fully automatic** after upload (no extra user input). The API returns a **`job_id` immediately** (`202 Accepted`); work runs in a **background thread** so the client should **poll** `GET /status/{job_id}` until `status` is `complete` or `failed`, then call `GET /download/{job_id}`.
 
@@ -17,12 +17,16 @@ Processing is **fully automatic** after upload (no extra user input). The API re
 |--------|------|-------------|
 | `POST` | `/upload-and-process` | Multipart upload; enqueue extraction → chunking → export; **returns at once** with `job_id`. |
 | `GET` | `/status/{job_id}` | `status`, **progress**, **chunk count**, **errors**, optional **`quality_summary`**, optional `summary` when done. |
-| `GET` | `/download/{job_id}` | ZIP when `status` is `complete` (`409` if still running or failed without a bundle). |
+| `GET` | `/download/{job_id}` | ZIP when `status` is `complete` (`409` if still running or failed without a bundle). Includes `output/vantage_portal_txt/*.txt` for **vantage.army.mil** Agent Studio (plain text uploads). |
 | `GET` | `/health` | Liveness. |
 
 ### Query parameters (`POST /upload-and-process`)
 
 - `include_xlsx` (bool, default **`true`**): include `vantage_chunks.xlsx` in the ZIP.
+
+### Army Vantage web upload (Agent Studio)
+
+The hosted uploader accepts **PDFs, Office documents, presentations, and text files**; it does **not** treat CSV/JSONL/JSON as documents. Each job therefore includes **`output/vantage_portal_txt/`** — one UTF-8 **`.txt` per chunk** (with short `#` comment headers for `chunk_id`, source, pages). Oversized chunks are split so each file stays under **`VANTAGE_PORTAL_TXT_MAX_BYTES`** (default 9 MiB). Upload those `.txt` files (or zip subsets) into Agent Studio’s **Upload documents** dialog.
 
 ## Example: POST response (`202 Accepted`)
 

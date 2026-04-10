@@ -61,7 +61,10 @@ def _pipeline_config(settings: ApiSettings) -> PipelineConfig:
             max_bytes=settings.max_upload_bytes,
             allowed_suffixes=frozenset({".pdf", ".docx", ".txt"}),
         ),
-        chunk=ChunkPolicy(sizing=settings.chunking_model()),
+        chunk=ChunkPolicy(
+            sizing=settings.chunking_model(),
+            portal_txt_max_bytes=settings.portal_txt_max_bytes,
+        ),
     )
 
 
@@ -87,7 +90,8 @@ async def upload_and_process(
     Accept multipart uploads, save inputs, enqueue extraction → chunking → export, return ``job_id``.
 
     Poll ``GET /status/{job_id}`` until ``status`` is ``complete`` or ``failed``, then
-    ``GET /download/{job_id}`` for the ZIP (CSV, JSONL, XLSX when enabled, processing report, …).
+    ``GET /download/{job_id}`` for the ZIP (CSV, JSONL, XLSX when enabled,
+    ``output/vantage_portal_txt/*.txt`` for Army Vantage web upload, processing report, …).
     """
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded")

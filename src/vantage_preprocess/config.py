@@ -25,6 +25,12 @@ class ChunkPolicy(BaseModel):
 
     sizing: ChunkingConfig = Field(default_factory=ChunkingConfig)
     combined_basename: str = "vantage_chunks"
+    portal_txt_max_bytes: int = Field(
+        default=9_437_184,
+        ge=4096,
+        description="Max UTF-8 bytes per portal .txt file (split oversized chunks).",
+    )
+    portal_txt_subdir: str = "vantage_portal_txt"
 
 
 class PipelineConfig(BaseModel):
@@ -34,5 +40,5 @@ class PipelineConfig(BaseModel):
     chunk: ChunkPolicy = Field(default_factory=ChunkPolicy)
     input_path: Path | None = None
     out_dir: Path | None = None
-    formats: list[str] = Field(default_factory=lambda: ["jsonl", "csv"])
+    formats: list[str] = Field(default_factory=lambda: ["jsonl", "csv", "txt"])
     recursive: bool = False

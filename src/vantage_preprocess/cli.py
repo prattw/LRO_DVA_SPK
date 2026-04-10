@@ -19,10 +19,10 @@ def run_cmd(
     input_path: Path = typer.Argument(..., exists=True, help="File or directory to process"),
     out: Path = typer.Option(Path("./out"), "--out", "-o", help="Output directory"),
     formats: str = typer.Option(
-        "jsonl,csv",
+        "jsonl,csv,txt",
         "--formats",
         "-f",
-        help="Comma-separated: jsonl, csv, xlsx",
+        help="Comma-separated: jsonl, csv, xlsx, txt (portal .txt for Army Vantage web upload)",
     ),
     recursive: bool = typer.Option(False, "--recursive", "-r", help="Recurse into subfolders"),
     max_words: int = typer.Option(2000, "--max-words", help="Hard maximum words per chunk"),

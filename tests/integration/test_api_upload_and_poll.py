@@ -54,6 +54,7 @@ def test_poll_until_complete_and_zip_has_exports(api_client) -> None:
     names = zf.namelist()
     assert any(n.endswith("vantage_chunks.csv") for n in names)
     assert any(n.endswith("processing_report.json") for n in names)
+    assert any("vantage_portal_txt/" in n and n.endswith(".txt") for n in names)
 
 
 def test_download_while_processing_returns_409(api_client) -> None:

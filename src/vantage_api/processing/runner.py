@@ -63,7 +63,7 @@ def run_upload_job(
     output_dir = work_dir / "output"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    formats = ["jsonl", "csv"]
+    formats = ["jsonl", "csv", "txt"]
     if include_xlsx:
         formats.append("xlsx")
 
@@ -82,21 +82,36 @@ def run_upload_job(
         formats,
         combined_basename="vantage_chunks",
         input_display=f"job:{job_id}",
+        portal_txt_max_bytes=pipeline_config.chunk.portal_txt_max_bytes,
+        portal_txt_subdir=pipeline_config.chunk.portal_txt_subdir,
     )
     write_per_file_results_json(output_dir, batch)
     write_errors_report_json(output_dir, batch)
 
     warnings: list[str] = []
+    portal_txt_dir = output_dir / pipeline_config.chunk.portal_txt_subdir
+    portal_txt_files = (
+        sum(1 for _ in portal_txt_dir.glob("*.txt")) if portal_txt_dir.is_dir() else 0
+    )
     processing_report = _build_processing_report(
         job_id=job_id,
         batch=batch,
         input_paths=input_paths,
         warnings=warnings,
+        portal_txt_files=portal_txt_files,
+        portal_txt_max_bytes=pipeline_config.chunk.portal_txt_max_bytes,
+        portal_txt_subdir=pipeline_config.chunk.portal_txt_subdir,
     )
     report_path = work_dir / "processing_report.json"
     report_path.write_text(json.dumps(processing_report, indent=2), encoding="utf-8")
 
-    metadata = _build_job_metadata(job_id, input_paths, pipeline_config, include_xlsx)
+    metadata = _build_job_metadata(
+        job_id,
+        input_paths,
+        pipeline_config,
+        include_xlsx,
+        portal_txt_files=portal_txt_files,
+    )
     meta_path = work_dir / "job_metadata.json"
     meta_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
@@ -119,6 +134,9 @@ def _build_processing_report(
     batch: BatchResult,
     input_paths: list[Path],
     warnings: list[str],
+    portal_txt_files: int = 0,
+    portal_txt_max_bytes: int = 9_437_184,
+    portal_txt_subdir: str = "vantage_portal_txt",
 ) -> dict[str, Any]:
     err_payload = [e.model_dump(mode="json") for e in batch.errors]
     ok_files = batch.files_seen - len(batch.errors)
@@ -145,6 +163,15 @@ def _build_processing_report(
                 "see vantage_preprocess.chunking."
             ),
         },
+        "army_vantage_portal": {
+            "txt_files_for_upload": portal_txt_files,
+            "txt_subdirectory": f"output/{portal_txt_subdir}",
+            "max_bytes_per_txt": portal_txt_max_bytes,
+            "note": (
+                "Plain UTF-8 .txt files for vantage.army.mil Agent Studio upload "
+                "(text files are accepted; CSV/JSON/JSONL are not)."
+            ),
+        },
     }
 
 
@@ -153,6 +180,7 @@ def _build_job_metadata(
     input_paths: list[Path],
     config: PipelineConfig,
     include_xlsx: bool,
+    portal_txt_files: int = 0,
 ) -> dict[str, Any]:
     chunk = config.chunk.sizing.model_dump()
     return {
@@ -160,9 +188,12 @@ def _build_job_metadata(
         "created_at": datetime.now(UTC).isoformat(),
         "input_files": [p.name for p in input_paths],
         "include_xlsx": include_xlsx,
+        "portal_txt_files": portal_txt_files,
         "pipeline": {
             "intake_max_bytes": config.intake.max_bytes,
             "chunk_sizing": chunk,
+            "portal_txt_max_bytes": config.chunk.portal_txt_max_bytes,
+            "portal_txt_subdir": config.chunk.portal_txt_subdir,
         },
     }
 
@@ -176,9 +207,10 @@ def _zip_outputs(
 ) -> Path:
     zip_path = work_dir / f"{job_id}.zip"
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
-        for f in sorted(output_dir.iterdir()):
+        for f in sorted(output_dir.rglob("*")):
             if f.is_file():
-                zf.write(f, arcname=f"output/{f.name}")
+                rel = f.relative_to(output_dir)
+                zf.write(f, arcname=f"output/{rel.as_posix()}")
         zf.write(report_path, arcname="processing_report.json")
         zf.write(meta_path, arcname="job_metadata.json")
     logger.info("Job %s: wrote %s", job_id, zip_path)
