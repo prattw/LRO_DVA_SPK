@@ -15,7 +15,10 @@ echo "Creating venv with: $PY"
 "$PY" -m venv .venv
 # shellcheck source=/dev/null
 source .venv/bin/activate
+export PYTHONPATH="${ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
 python -m pip install -U pip
 pip install -e ".[dev]"
+# iCloud Drive: .pth files in site-packages may be UF_HIDDEN and skipped by Python;
+# PYTHONPATH=src keeps editable imports working (see scripts/run_portal_txt_for_vantage.sh).
 python -m pytest tests/ -q
 echo "OK: $(python --version) at $(command -v python)"

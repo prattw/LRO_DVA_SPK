@@ -77,6 +77,8 @@ def test_upload_process_txt_roundtrip(tmp_path, monkeypatch) -> None:
     assert "processing_report.json" in names
     assert any(n.endswith("vantage_chunks.jsonl") for n in names)
     assert any(n.endswith("vantage_chunks.csv") for n in names)
+    assert any(n.endswith("vantage_master.jsonl") for n in names)
+    assert any(n.endswith("vantage_master.csv") for n in names)
     assert any(n.endswith("vantage_chunks.xlsx") for n in names)
     assert any(n.endswith("per_file_results.json") for n in names)
     assert any(n.endswith("errors_report.json") for n in names)

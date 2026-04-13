@@ -158,10 +158,12 @@ const blob = await (await fetch(`/download/${job_id}`)).blob();
 
 ## ZIP contents
 
-- `output/vantage_chunks.jsonl` — combined NDJSON  
+- `output/vantage_chunks.jsonl` — combined NDJSON (full ingestion columns)  
 - `output/vantage_chunks.csv` — combined UTF-8 CSV  
+- `output/vantage_master.jsonl` — slim NDJSON for Workshop / ontology (`source_file`, `source_spec`, `section_number`, `section_title`, `chunk_id`, `chunk_text`, `page_start`, `page_end`, `extraction_method`)  
+- `output/vantage_master.csv` — same schema as UTF-8 CSV  
 - `output/vantage_chunks.xlsx` — when `include_xlsx=true` (default)  
-- `output/run_manifest.json` — batch manifest (includes `quality_summary` when enabled)  
+- `output/run_manifest.json` — batch manifest (includes `quality_summary` when enabled; `workshop_master` paths when rows exist)  
 - `output/per_file_results.json` — per input file  
 - `output/errors_report.json` — structured failures  
 - `processing_report.json` — job-level summary (`quality_summary`, …)  

@@ -11,6 +11,7 @@ from vantage_preprocess.export.csv_export import write_csv
 from vantage_preprocess.export.excel import write_excel
 from vantage_preprocess.export.jsonl import write_jsonl
 from vantage_preprocess.export.txt_portal import write_txt_portal_files
+from vantage_preprocess.export.workshop_master import write_workshop_master
 from vantage_preprocess.models.document import ExportRow
 from vantage_preprocess.models.result import BatchResult, ErrorRecord, PerFileOutcome
 from vantage_preprocess.quality.scoring import summarize_job_quality
@@ -159,7 +160,7 @@ def write_batch_artifacts(
     portal_txt_max_bytes: int = 9_437_184,
     portal_txt_subdir: str = "vantage_portal_txt",
 ) -> Path:
-    """Write JSONL/CSV/XLSX, optional portal ``.txt`` bundle, and run_manifest.json."""
+    """Write JSONL/CSV/XLSX, optional portal ``.txt`` bundle, master export, and run_manifest.json."""
     out_dir.mkdir(parents=True, exist_ok=True)
     fmt_set = {f.strip().lower() for f in formats}
     if "jsonl" in fmt_set:
@@ -180,6 +181,14 @@ def write_batch_artifacts(
         )
         portal_txt_path = str(pdir.resolve())
 
+    master_jsonl: str | None = None
+    master_csv: str | None = None
+    mj, mc = write_workshop_master(batch.rows, out_dir, basename="vantage_master")
+    if mj is not None:
+        master_jsonl = str(mj.resolve())
+    if mc is not None:
+        master_csv = str(mc.resolve())
+
     manifest = {
         "run_id": batch.run_id,
         "created_at": batch.finished_at.isoformat(),
@@ -197,6 +206,12 @@ def write_batch_artifacts(
             "files_written": portal_txt_files,
             "max_bytes_per_file": portal_txt_max_bytes,
             "directory": portal_txt_path,
+        }
+    if master_jsonl or master_csv:
+        manifest["workshop_master"] = {
+            "description": "Slim tabular export for ontology / warehouse (fixed columns).",
+            "jsonl": master_jsonl,
+            "csv": master_csv,
         }
     manifest_path = out_dir / "run_manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")

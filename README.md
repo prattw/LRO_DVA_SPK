@@ -7,6 +7,24 @@ Document preprocessing pipeline for Army Vantage–style ingestion: **PDF, DOCX,
 - **Python 3.11+** (test on 3.11 for Windows deployments)
 - **Tesseract** on `PATH` for OCR (recommended for scans)
 
+## Army Vantage: OCR on the Mac, then upload portal `.txt`
+
+Vantage Code Workspace does not provide Tesseract. Run preprocessing **on a machine you control** (e.g. Mac Mini), then upload **plain text** into Agent Studio — not raw JSON/CSV as “documents” (see `docs/API_ARMY_VANTAGE.md`).
+
+1. **Install Tesseract** (once): `brew install tesseract`
+2. **Install the project** (see [Install](#install))
+3. **Check the machine**: `./scripts/check_mac_prereqs.sh`
+4. **Run the pipeline** (writes JSONL/CSV + `vantage_portal_txt/*.txt`):
+
+   ```bash
+   ./scripts/run_portal_txt_for_vantage.sh /path/to/specs_or_folder ./out_upload
+   ```
+
+5. **Upload** the files under `out_upload/vantage_portal_txt/` in Agent Studio’s document dialog.  
+6. **Keep** `out_upload/vantage_master.jsonl` (and `.csv`) for downstream warehouse / ontology work — same run, fixed columns, no re-OCR later.
+
+**Repo in iCloud Drive:** Python may skip hidden `.pth` files in `.venv`; the scripts set `PYTHONPATH` to `./src` so `vantage-preprocess` always imports. For manual runs: `export PYTHONPATH="$PWD/src"`.
+
 ## Project layout
 
 ```text
@@ -43,7 +61,9 @@ pip install -e ".[dev,api]"
 ## CLI
 
 ```bash
-python -m vantage_preprocess run ./path/to/files --out ./out --formats jsonl,csv,xlsx
+export PYTHONPATH=./src   # recommended if the repo lives in iCloud Drive
+vantage-preprocess ./path/to/files --out ./out --formats jsonl,csv,txt
+# or: ./scripts/run_portal_txt_for_vantage.sh ./path/to/files ./out
 ```
 
 ## API (optional)
